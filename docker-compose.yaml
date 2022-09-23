@@ -1,0 +1,30 @@
+version: '3.7'
+services:
+    postgres:
+        image: postgres:latest
+        hostname: postgres
+        restart: always
+        environment:
+          - POSTGRES_USER=postgres
+          - POSTGRES_PASSWORD=postgres
+        logging:
+          options:
+            max-size: 10m
+            max-file: "3"
+        ports:
+          - '5438:5432'
+        volumes:
+          # copy the sql script to create tables
+          - ./db_init/create_tables.sql:/docker-entrypoint-initdb.d/create_tables.sql
+          - ./db_init/db_init.sh:/docker-entrypoint-initdb.d/db_init.sh
+          - ./data.csv:/working_dir/data.csv
+    pgadmin:
+      image: dpage/pgadmin4
+      depends_on:
+        - postgres
+      ports:
+        - "5555:80"
+      environment:
+        PGADMIN_DEFAULT_EMAIL: pgadmin4@pgadmin.org
+        PGADMIN_DEFAULT_PASSWORD: admin
+      restart: unless-stopped
